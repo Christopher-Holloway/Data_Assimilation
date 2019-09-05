@@ -38,3 +38,23 @@ estimator = KerasClassifier(build_fn=create_baseline, nb_epoch=100, batch_size=5
 kfold = StratifiedKFold(y=encoded_Y, n_folds=10, shuffle=True, random_state=seed)
 results = cross_val_score(estimator, X, encoded_Y, cv=kfold)
 print("Results: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
+
+
+# smaller model
+def create_smaller():
+	# create model
+	model = Sequential()
+	model.add(Dense(30, input_dim=42, init='normal', activation='relu'))
+	model.add(Dense(1, init='normal', activation='sigmoid'))
+	# Compile model
+	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+	return model
+
+numpy.random.seed(seed)
+estimators = []
+estimators.append(('standardize', StandardScaler()))
+estimators.append(('mlp', KerasClassifier(build_fn=create_smaller, nb_epoch=100, batch_size=5, verbose=0)))
+pipeline = Pipeline(estimators)
+kfold = StratifiedKFold(y=encoded_Y, n_folds=10, shuffle=True, random_state=seed)
+results = cross_val_score(pipeline, X, encoded_Y, cv=kfold)
+print("Smaller: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
